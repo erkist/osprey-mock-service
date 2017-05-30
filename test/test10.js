@@ -55,7 +55,7 @@ describe('osprey mock service v1.0', function () {
       })
     })
 
-    it('should respond with multiple examples', function () {
+    it('should respond with first examples', function () {
       return popsicle.default(
         {
           method: 'GET',
@@ -64,18 +64,11 @@ describe('osprey mock service v1.0', function () {
       )
       .use(server(http))
       .then(function (res) {
-        expect(JSON.parse(res.body)).to.deep.equal([
+        expect(JSON.parse(res.body)).to.deep.equal(
           {
-            example1: {
-              name: 'example1'
-            }
-          },
-          {
-            example2: {
-              name: 'example2'
-            }
+            key: 'value1'
           }
-        ])
+        )
         expect(res.status).to.equal(200)
       })
     })

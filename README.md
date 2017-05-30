@@ -1,78 +1,35 @@
 # Osprey Mock Service
 
-[![NPM version][npm-image]][npm-url]
-[![NPM downloads][downloads-image]][downloads-url]
-[![Build status][travis-image]][travis-url]
-[![Test coverage][coveralls-image]][coveralls-url]
+Fork of [mulesoft-labs/osprey-mock-service](https://github.com/mulesoft-labs/osprey-mock-service)
+that adds the following features:
 
-Generate an API mock service from a RAML definition using Osprey.
+## Improved examples handling
 
-## Usage
+When several named examples are given for a resource body, using `examples`, there are now two options for how to select which example to return.
 
-### Global (CLI)
+1. Select the first example (default behavior)
+2. Select example by matching to a provided string (using the `-e` argument)
 
-```
-npm install -g osprey-mock-service
-```
+Given the following example:
 
-Start the service from the CLI. This will automatically use the `baseUri` as the path to the mock service. For example, `http://example.com/api` will result in `http://localhost:{PORT}/api`.
-
-```
-osprey-mock-service -f api.raml -p 3000
-```
-
-**Options**
-
-* `-f` Path to the root RAML definition (E.g. `/path/to/api.raml`)
-* `-p` Port number to bind the server locally
-
-### Locally (JavaScript)
-
-```
-npm install osprey-mock-service --save
+```yaml
+/resource:
+  get:
+    responses:
+      200:
+        application/json:
+          examples:
+            first-named-example: {"key": "value"}
+            second-named-example: {"key": "value2"}
 ```
 
-The mocking service simply accepts a RAML definition and returns a router that can be mounted into any Connect-style middleware layer or even used with `http`. Best used with `osprey` to support incoming validation automatically.
+By default, this fork of the mock server will return `{"key": "value"}`
 
-```js
-var mockService = require('../osprey-mock-service')
-var express = require('express')
-var parser = require('raml-1-parser')
-var path = require('path')
-var osprey = require('osprey')
+To get the mock server to choose a different example, the `-e <substring>` flag can be used. 
+The first example where the name contains the `<substring>` will be selected. If no name matches, the first example will be selected.
 
-var app = express()
-
-parser.loadRAML(path.join(__dirname, 'api.raml'), { rejectOnErrors: true })
-  .then(function (ramlApi) {
-    var raml = ramlApi.expand(true).toJSON({ serializeMetadata: false })
-    app.use(osprey.server(raml))
-    app.use(mockService(raml))
-    app.listen(3000)
-  })
-
-```
-
-#### Additional methods
-
-* `createServer` Creates a mock service instance with Osprey
-* `createServerFromBaseUri` Creates a mock service with Osprey and uses the base URI path
-* `loadFile` Creates a mock service with Osprey and the base URI path from a RAML file
-
-### Limitation
-
-#### RAML 1.0
-This module only uses the `example` (or `examples`) property inside a given resource/method body. It does not take into consideration any of the `example` properties defined inside the `properties` or `schema` of the body itself.
+In the example above, passing `-e sec` will match `second-named-example`, meaning the mock server will return `{"key": "value2"}`
 
 ## License
 
 Apache License 2.0
-
-[npm-image]: https://img.shields.io/npm/v/osprey-mock-service.svg?style=flat
-[npm-url]: https://npmjs.org/package/osprey-mock-service
-[downloads-image]: https://img.shields.io/npm/dm/osprey-mock-service.svg?style=flat
-[downloads-url]: https://npmjs.org/package/osprey-mock-service
-[travis-image]: https://img.shields.io/travis/mulesoft-labs/osprey-mock-service.svg?style=flat
-[travis-url]: https://travis-ci.org/mulesoft-labs/osprey-mock-service
-[coveralls-image]: https://img.shields.io/coveralls/mulesoft-labs/osprey-mock-service.svg?style=flat
-[coveralls-url]: https://coveralls.io/r/mulesoft-labs/osprey-mock-service?branch=master

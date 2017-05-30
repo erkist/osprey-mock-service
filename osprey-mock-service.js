@@ -9,6 +9,17 @@ module.exports = ospreyMockServer
 module.exports.createServer = createServer
 module.exports.createServerFromBaseUri = createServerFromBaseUri
 module.exports.loadFile = loadFile
+module.exports.setExampleSelector = setExampleSelector
+
+var exampleSelector = ''
+
+/**
+ * Sets the string to search for when selecting examples
+ * @param e string to use when selecting examples
+ */
+function setExampleSelector (e) {
+  exampleSelector = e
+}
 
 /**
  * Create an Osprey server instance.
@@ -107,12 +118,13 @@ function handler (method) {
 
       // Parse body.examples.
       if (Array.isArray(body.examples)) {
-        example = []
+        example = body.examples[0].structuredValue
 
-        body.examples.forEach(function (ex) {
-          var obj = {}
-          obj[ex.name] = ex.structuredValue
-          example.push(obj)
+        body.examples.some(function (ex) {
+          if (ex.name.indexOf(exampleSelector) !== -1) {
+            example = ex.structuredValue
+            return true
+          }
         })
       }
 
